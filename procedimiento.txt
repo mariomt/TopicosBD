@@ -1,0 +1,90 @@
+RESPUESTA:
+
+Estos procedimientos se basan en eque el campo nivel es de tipo numerico (revisar esto en la definicion de la tamba).
+
+Primero vamos a ver un caso muy sencillo donde le pasamos los valores de la llave promaria al procedimiento ey este le acrtualiza el valor nivel
+
+Delimiter$$
+
+CREATE PROCEDURE SP_NIVEL P (IN_PAR_CURP VARCHAR(255), IN PAR_ID_PERSONA VARCHAR(255), IN PAR_CLAVE_CT VARCHAR(255), IN PAR_NIVEL INT)
+
+BEGIN 
+
+SET NIVEL_NUEVO = NIVEL_ACTUAL + 2;
+
+IF NIVEL_NUEVO > 9 THEN
+	SET NIVEL_NUEVO=9;
+	
+ENDO IF;
+
+
+	UPDATE CEMABE_PERSONAL SET NIVEL = PAR_NIVEL WHERE CURP=PAR_CURP AND ID_PERSONA=PAR_ID_PERSONA AND CLAVE_CT=PAR_CLAVE_CT;
+	
+	END$$
+	
+	DELIMITER;
+	
+	
+	Como se usa?
+	
+	
+	CALL SP_NIVEL ('VIPR521125HJCLRC06', '1764176', '14EES0015U1' );
+	
+	COMMIT;
+	
+	
+Otra opcion es crear un procedimiento que actualice todos los registros de un jalon.
+Esto ya es de nivel avanzado y lleva algunos elementos nuevos, en particular el uso de los CURSORES.
+Este ejemplo es para actualizar todos y cada uno de los registros cyo nivel es menor a 9, con tan solo llamarlo.
+
+
+	DELIMITER//
+	CREATE PROCEDURE SP_NIVEL()
+	
+	
+	BEGIN 
+	
+	
+	DECLARE VAL_CURP VARCHAR(255);
+	
+	DECLARE VAL_ID_PERSONA VARCHAR (255);
+	DECLARE VAL_CLAVE_CT VARCHAR(255);
+	
+		DECLARE VAL_NIVEL  INT;
+		
+		DECLARE VAL_NIVEL_NUEVO INT;
+		DECLARE FINALIZADO INT DEFAULT 0 ;
+		
+		
+	DECLARE CUR_PERSONAL CURSOR FOR
+		SELECT CURP, ID_PERSONA, CLAVE_CT, NIVEL
+		FROM CEMABE_PERSONAL
+		WHERE NIVEL <9
+		FOR UPDATE;
+		
+		
+		
+		DECLARE CONTINUE HANDLER FOR NOT FOUND SET FINALIZADO = 1;
+		
+			OPEN CUR_PERSONAL;
+			
+			REPEAT
+			
+			FETCH CUR_PERSONAL INTO VAL_CURP, VAL_ID_PERSONA,VAL_CLAVE_CT,VAL_NIVEL;
+			
+			SET  VAL_NIVEL_NUEVO = VAL_NIVEL + 2;
+			IF VAL_NIVEL_NUEVO>=9 THEN 
+			SET VAL_NIVEL_NUEVO=9;
+			
+			END IF;
+			
+			UPDATE CEMABE_PERSONAL SET NIVEL=VAL_NIVEL_NUEVO WHERE CURP=VAL_CURP AND ID_PERSONA= VAL_ID_PERSONA AND CLAVE_CT=VAL_CLAVE_CT;
+			
+			
+			UNTIL FINALIZADO = 1 END REPEAT;
+			
+			CLOSE CUR_PERSONAL;
+			
+			END//
+			DELIMITER ;
+	
