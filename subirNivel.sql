@@ -80,7 +80,7 @@ DECLARE VAL_CLAVE_CT VARCHAR(255);
 
 
 		--Los cursores corren y corren hasta terminar con un indicarod "NOT FOUND", esta variable se pone en 1 cuando esto pasa y nos ayuda a terminar el ciclo.
-		DECLARE CONTUNUE HANDLER FOR NOT FOUND SET FINALIZADO=1;
+		DECLARE CONTINUE HANDLER FOR NOT FOUND SET FINALIZADO=1;
 
 		--Se abre el cursor, es decir, se inicia
 
