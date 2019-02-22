@@ -57,7 +57,6 @@ CREATE TRIGGER tg_productosAudit_BU
 BEFORE UPDATE ON PRODUCTOS
 FOR EACH ROW
 BEGIN
-
 	IF NEW.PRECIO!=OLD.PRECIO THEN
 		INSERT INTO PRODUCTOS_AUDIT(AUDIT_USER,AUDIT_ACTION,ID_PRODUCTO,PRECIO)
 		VALUES (CURRENT_USER(),'update',OLD.ID,OLD.PRECIO);
@@ -77,11 +76,15 @@ DELIMITER ;
 /*----DISPARADOR_ORDEN_DE_COMPRA----*/
 /*---------------------------------*/
 
--- Cada que se realice un registro en la taba orden_compra se modificara el precio del producto
--- Por cada unidad de producto ordenada se le incrementará en 1% a su precio actual para la siguientes ventas
--- En el caso de el producto con menor demanda en esa orden, se le restará el 1% a su precio acutal para la siguiente venta.
--- En este caso cuando sea un solo producto en la orden, a este se le restará el 1%.
--- En el caso de haber dor productos con menor solo a uno se le restará el 1%, al otro se le sumara.
+/*
+Cada que se realice un registro en la taba orden_compra se modificara el precio del producto
+Por cada unidad de producto ordenada se le incrementará en 1% a su precio actual para la 
+siguientes ventas.
+En el caso de el producto con menor demanda en esa orden, se le restará el 1% a su precio 
+acutal para la siguiente venta.
+En este caso cuando sea un solo producto en la orden, a este se le restará el 1%.
+En el caso de haber dor productos con menor solo a uno se le restará el 1%, al otro se le sumara.
+*/
 DELIMITER //
 DROP TRIGGER IF EXISTS tg_ordenCompra_AI;
 CREATE TRIGGER tg_ordenCompra_AI 
@@ -94,7 +97,7 @@ BEGIN
 	DECLARE PAR_CANTIDAD INT(11);
 	DECLARE PAR_PRECIO DOUBLE DEFAULT 1;
 	
-
+	-- Cursor que contiene los productos que se les realizará el incremento
 	DECLARE CUR_PRODUCTO CURSOR FOR  
 	SELECT ID_PRODUCTO,CANTIDAD 
 	FROM ORDEN_DESCRIPCION 
@@ -107,7 +110,8 @@ BEGIN
 	DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 	
 	-- Calcular el nuevo precio del producto con menor venta.
-	SET PAR_CANTIDAD :=(SELECT CANTIDAD FROM ORDEN_DESCRIPCION WHERE ID=NEW.ID_DESCRIPCION AND ID_PRODUCTO=@MENOR);
+	SET PAR_CANTIDAD :=(SELECT CANTIDAD FROM ORDEN_DESCRIPCION WHERE ID=NEW.ID_DESCRIPCION 
+						AND ID_PRODUCTO=@MENOR);
 	SET PAR_PRECIO :=(SELECT PRECIO FROM PRODUCTOS WHERE ID=@MENOR);
 	SET PAR_PRECIO =(PAR_PRECIO-(PAR_CANTIDAD*(0.01*PAR_PRECIO)));
 
