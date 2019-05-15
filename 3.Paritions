@@ -1,0 +1,56 @@
+
+-- ORIGINAL
+
+The concept of partitioning relates to the physical aspects of data storage in the database. If you look at the SQL standards, they do not give much information the concept, and the SQL language itself intends to work independently of which media or data structure is used for storing information or data specific to different schemas, tables, rows, or columns. Advanced database managment systems have added means of specifuing the physical location used for data storage as hardware, the file system, or as both. In MySQL, the InnoDB storage engine provides support for these porpuse whit the notion of tablespace.
+
+Prtitioning enable us to distribute parts of individua tables to be stored as separate tables at different locations in the dile system. Additionally, the distibution is accomplished with user specified rules provided, such as in the from of modulus, a hashing function, or matching with simple value or range, and the user provided expession as a parameter that is commonly known as a partitioning function.
+
+When a partition table is called, the default storage engine is used, same as creating a table, and can be overridden just as we would do for anny table by specifying the STORAGE ENGINE option. The following example demonstrates creating a table partitioned by hash into four partitions, all of wich use the InnoDB storage enginer.
+
+
+-- TRADUCCIÓN GOOGLE
+
+El concepto de partición se relaciona con los aspectos físicos del almacenamiento de datos en la base de datos. Si observa los estándares de SQL, no le dan mucha información al concepto, y el lenguaje SQL mismo intenta trabajar independientemente de qué medio o estructura de datos se usa para almacenar información o datos específicos de diferentes esquemas, tablas, filas o columnas. . Los sistemas avanzados de gestión de bases de datos han agregado medios para especificar la ubicación física utilizada para el almacenamiento de datos como hardware, el sistema de archivos o ambos. En MySQL, el motor de almacenamiento InnoDB proporciona soporte para estos problemas con la noción de espacio de tabla.
+
+La preparación nos permite distribuir partes de tablas individuales para almacenarlas como tablas separadas en diferentes ubicaciones en el sistema de archivos. Además, la distribución se realiza con las reglas especificadas por el usuario, como en el caso de desde el módulo, una función de hashing, o la coincidencia con un valor o rango simple, y la expesión proporcionada por el usuario como un parámetro que se conoce comúnmente como una función de partición.
+
+Cuando se llama a una tabla de partición, se usa el motor de almacenamiento predeterminado, al igual que para crear una tabla, y se puede anular de la misma manera que lo haríamos con cualquier tabla especificando la opción MOTOR DE ALMACENAMIENTO. El siguiente ejemplo muestra cómo crear una tabla particionada por hash en cuatro particiones, todas las cuales utilizan el motor de almacenamiento InnoDB.
+
+
+
+
+
+CREATE TABLE tp(tp_id INT, amt DECIMAL(5,2),trx_date Date)
+ENGINE=INNODB
+PARTITION BY HASH (MONTH (trx_date))
+PARTITIONS 4;
+
+
+
+-- Opción 1 para mysql
+EXPLAIN SELECT * FROM tp;
+
+
+
+
+/*PRIMER OPCION Mariadb*/
+MariaDB [maestros_issteson]> SELECT TABLE_SCHEMA,TABLE_NAME,PARTITION_NAME FROM INFORMATION_SCHEMA.PARTITIONS WHERE TABLE_SCHEMA='maestros_issteson' AND TABLE_NAME='tp';
++-------------------+------------+----------------+
+| TABLE_SCHEMA      | TABLE_NAME | PARTITION_NAME |
++-------------------+------------+----------------+
+| maestros_issteson | tp         | p0             |
+| maestros_issteson | tp         | p1             |
+| maestros_issteson | tp         | p2             |
+| maestros_issteson | tp         | p3             |
++-------------------+------------+----------------+
+4 rows in set (0.32 sec)
+
+
+/* SEGUNDA OPCION Mariadb*/
+MariaDB [maestros_issteson]> SELECT TABLE_NAME,GROUP_CONCAT(PARTITION_NAME) AS PARTITIONS FROM INFORMATION_SCHEMA.PARTITIONS WHERE TABLE_SCHEMA='maestros_issteson' AND TABLE_NAME='tp' GROUP BY TABLE_NAME;
++------------+-------------+
+| TABLE_NAME | PARTITIONS  |
++------------+-------------+
+| tp         | p0,p1,p2,p3 |
++------------+-------------+
+1 row in set (0.01 sec)

@@ -1,29 +1,29 @@
-/*crear indices:*/
-
+/*CREAR IDICES:*/
 ALTER TABLE customer_contacts
 ADD INDEX<customer_code>;
 
 
-/*Como Crear indices*/
+/*CREAR UN INDICE*/
 CREATE INDEX NOMBRE_INDEX
 ON TABLE(COLUM1,COLUM2....);
 
 
-/*Verificar indices...*/
+/*MOSTRAR INDICES CREADOS PARA LA TABLA X...*/
 SHOW INDEXES FROM NOMBRE_TABLA;
 
 
-/*Borrar indices*/
+/*BORRAR INDICES*/
 DROP INDEX <NOMBRE DEL INDEX> ON <TABLA>;
 
-/*INDICES PARCIALES*/
-/*Podemos crear un indice utilizando solo una parte del campo (de su contenido), por ejemplo este comando crea un indice sobre los primeros 5 caracteres del campo*/
 
+/*INDICES PARCIALES*/
+/*Podemos crear un indice utilizando solo una parte del campo (de su contenido), 
+por ejemplo este comando crea un indice sobre los primeros 5 caracteres del campo*/
 CREATE INDEX cust_name_indx ON customers<name<5>>
+
 
 /*INDICE COMPUESTO*/
 CREATE INDEX Nombre_llave ON nombreTabla(campo1,campo2,campo3....);
-
 
 
 /*
